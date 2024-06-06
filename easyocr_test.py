@@ -3,8 +3,11 @@
 import easyocr
 
 image = '/Users/allakopiichenko/Desktop/test_image_1.png'
+image_handwritten = '/Users/allakopiichenko/Desktop/test_image_2.png'
 
-reader = easyocr.Reader(['en','en']) # this needs to run only once to load the model into memory
-result = reader.readtext(image, decoder='wordbeamsearch', detail = 0, paragraph=True)
+reader = easyocr.Reader(['en','en']) 
+
+result = reader.readtext(image_handwritten, decoder='wordbeamsearch', detail = 0, paragraph=True)
 
 print(result)
+
