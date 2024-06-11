@@ -1,5 +1,26 @@
-""" main.py - для запуску функціоналу програми, яку необхідно створити
-* main.py матиме вигляд CLI, детальніше про створення CLI нижче. Можна для цього використовувати інші комфортні Вам інструменти, а не те що надано в посиланні нижче.
-* CLI прийматиме як аргумент назву .pdf файлу, який необхідно обробити
-* Візуалізувати зображення сторінки з документи до і після обробки (можна як і за допомогою opencv, так і інші інструменти як matplot, plotly і тд)
-"""
+# CLI for running the program
+
+import click
+from PIL import Image
+import os
+from input_output_files_preprocessor import PdfToImageConvertor, ImagePreProcessor
+
+@click.command()
+@click.argument('pdf_name')
+@click.option('--path', '-p', default='output_images', help='Output folder path')
+
+def launch_program(pdf_name, path):
+    converter = PdfToImageConvertor(pdf_name)
+    converter.pdf_to_images(path)
+
+    for filename in os.listdir(path):
+        if filename.endswith(".png"):
+            image_path = os.path.join(path, filename)
+            image = Image.open(image_path)
+            preprocessor = ImagePreProcessor(image)
+            processed_image = preprocessor.preprocess_image()
+            processed_image.save(os.path.join(path, f"processed_{filename}"))
+    
+
+if __name__ == '__main__':
+    launch_program()
