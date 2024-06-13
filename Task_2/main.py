@@ -19,7 +19,7 @@ def launch_program(pdf_name, path):
         if filename.endswith(".png"):
             image_path = os.path.join(path, filename)
             image = Image.open(image_path)
-            preprocessor = ImagePreProcessor(image, image_path)
+            preprocessor = ImagePreProcessor(image)
             processed_image = preprocessor.saving_processed_image()
             processed_image.save(os.path.join(path, f"processed_{filename}"))
     
