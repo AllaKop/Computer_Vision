@@ -26,7 +26,7 @@ class ImagePreProcessor:
         self.input_file = input_file
 
     # savinf output image
-    def saving_processed_image(input_file, output_folder):
+    def saving_processed_image(self, input_file, output_folder):
         
         def preprocess_image(self):
             from data_preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
