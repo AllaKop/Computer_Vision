@@ -44,4 +44,4 @@ class ImagePreProcessor:
             noise_removal = NoiseRemoval(binarized_image)
             final_image = noise_removal.gaussian_blurring(binarized_image)
 
-            return preprocess_image
+            return final_image
