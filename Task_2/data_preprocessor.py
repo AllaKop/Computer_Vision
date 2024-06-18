@@ -40,8 +40,8 @@ class Binarization:
 
     # converting colored image to gray scale
     def gray_conversion(self):
-        gray_image = cv2.cvtColor(self.import_image, cv2.COLOR_BGR2GRAY)
-        return gray_image
+        self.gray_image = cv2.cvtColor(self.import_image, cv2.COLOR_BGR2GRAY)
+        return self.gray_image
 
     # converting gray scale image to binarized image
     def binarized_conversion (self, gray_image):

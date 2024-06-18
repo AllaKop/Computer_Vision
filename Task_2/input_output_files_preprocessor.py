@@ -2,6 +2,7 @@
 
 import os
 import PyPDF2
+import numpy as np
 from PIL import Image
 from pdf2image import convert_from_path
 from data_preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
@@ -29,14 +30,17 @@ class ImagePreProcessor:
 
     # initializing import an image
     def __init__(self, image_path):
-        self.image_path = NoiseRemoval()
+        self.image_path = image_path
 
     # preprocessing and saving an image
     def preprocess_image(self) :
         image = Image.open(self.image_path)
 
+        # Converting image to numpy array for processing
+        image_np = np.array(image)
+
         # Correct Skew
-        skew_corrector = ImageSkewCorrector(image)
+        skew_corrector = ImageSkewCorrector(image_np)
         corrected_image = skew_corrector.correct_skew()
 
         # Convert to Gray and Binarize
