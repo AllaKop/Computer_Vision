@@ -32,7 +32,7 @@ class ImagePreProcessor:
         self.image_path = NoiseRemoval()
 
     # preprocessing and saving an image
-    def saving_processed_image(self) :
+    def preprocess_image(self) :
         image = Image.open(self.image_path)
 
         # Correct Skew
@@ -46,6 +46,6 @@ class ImagePreProcessor:
 
         # Remove Noise
         noise_removal = NoiseRemoval(binarized_image)
-        final_image = noise_removal.gaussian_blurring(binarized_image)
+        final_image = noise_removal.gaussian_blurring()
 
-        return final_image
+        return Image.fromarray(final_image)

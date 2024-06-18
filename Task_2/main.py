@@ -1,9 +1,7 @@
 # CLI for running the program
 
 import click
-from PIL import Image
 import os
-import cv2
 from input_output_files_preprocessor import PdfToImageConvertor, ImagePreProcessor
 
 @click.command()
@@ -17,7 +15,7 @@ def launch_program(pdf_name, path):
 
     for image_path in image_paths:
         preprocessor = ImagePreProcessor(image_path)
-        processed_image = preprocessor.saving_processed_image()
+        processed_image = preprocessor.preprocess_image()
         processed_image.save(os.path.join(path, f"processed_{os.path.basename(image_path)}"))
     
 
