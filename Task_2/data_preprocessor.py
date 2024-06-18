@@ -43,12 +43,12 @@ class Binarization:
         self.img_skew_corrected = img_skew_corrected
 
     # converting colored image to gray scale
-    def gray_conversion(self, img_skew_corrected):
+    def gray_conversion(self):
         gray_image = cv2.cvtColor(self.img_skew_corrected, cv2.COLOR_BGR2GRAY)
         return gray_image
 
     # converting gray scale image to binarized image
-    def binarized_conversion (self, gray_image):
+    def binarized_conversion (self):
         binarized_image = cv2.adaptiveThreshold(self.gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11,2)
         return binarized_image
 
@@ -59,6 +59,6 @@ class NoiseRemoval:
         self.binarized_image = binarized_image
 
     # using Gaussian blurring for noise removal
-    def gaussian_blurring (self, binarized_image):
+    def gaussian_blurring (self):
         noise_removed_image = cv2.GaussianBlur(self.binarized_image, (5,5),0)
         return noise_removed_image
