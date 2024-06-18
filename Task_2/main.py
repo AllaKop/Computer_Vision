@@ -13,15 +13,12 @@ from input_output_files_preprocessor import PdfToImageConvertor, ImagePreProcess
 def launch_program(pdf_name, path):
     pdf_path = os.path.abspath(pdf_name)
     converter = PdfToImageConvertor(pdf_path)
-    converter.pdf_to_images(path)
+    image_paths = converter.pdf_to_images(path)
 
-    for filename in os.listdir(path):
-        if filename.endswith(".png"):
-            image_path = os.path.join(path, filename)
-            image = Image.open(image_path)
-            preprocessor = ImagePreProcessor(image)
-            processed_image = preprocessor.saving_processed_image()
-            processed_image.save(os.path.join(path, f"processed_{filename}"))
+    for image_path in image_paths:
+        preprocessor = ImagePreProcessor(image_path)
+        processed_image = preprocessor.saving_processed_image()
+        processed_image.save(os.path.join(path, f"processed_{os.path.basename(image_path)}"))
     
 
 if __name__ == '__main__':
