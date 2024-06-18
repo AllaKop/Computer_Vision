@@ -29,7 +29,7 @@ class ImagePreProcessor:
 
     # initializing import an image
     def __init__(self, image_path):
-        self.image_path = image_path
+        self.image_path = NoiseRemoval()
 
     # preprocessing and saving an image
     def saving_processed_image(self) :
