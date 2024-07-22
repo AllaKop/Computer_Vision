@@ -8,6 +8,6 @@ cd /Users/allakopiichenko/Desktop/CV_Internship_Meduzzen/task_2
 -  activate the program, using python3 main.py [name_of_the_file].pdf 
 - check the results in mentioned folder
 
-!(http://https://github.com/AllaKop/CV_Internship_Meduzzen/tree/task_2/Task_2/output_image?raw=true)
+![Alt text](http://https://github.com/AllaKop/CV_Internship_Meduzzen/tree/task_2/Task_2/output_image?raw=true)
 
-!https://github.com/AllaKop/CV_Internship_Meduzzen/blob/task_2/Task_2/output_images/processed_page_1.png?raw=true)
+![Alt text](https://github.com/AllaKop/CV_Internship_Meduzzen/blob/task_2/Task_2/output_images/processed_page_1.png?raw=true)
