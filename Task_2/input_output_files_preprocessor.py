@@ -39,16 +39,16 @@ class ImagePreProcessor:
         # Converting image to numpy array for processing
         image_np = np.array(image)
 
-        # Correct Skew
+        # Correcting Skew
         skew_corrector = ImageSkewCorrector(image_np)
         corrected_image = skew_corrector.correct_skew()
 
-        # Convert to Gray and Binarize
+        # Converting to Gray and Binarize
         binarizer = Binarization(corrected_image)
         gray_image = binarizer.gray_conversion()
         binarized_image = binarizer.binarized_conversion(gray_image)
 
-        # Remove Noise
+        # Removing Noise
         noise_removal = NoiseRemoval(binarized_image)
         final_image = noise_removal.gaussian_blurring()
 
