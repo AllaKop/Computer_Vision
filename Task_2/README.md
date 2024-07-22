@@ -1,6 +1,13 @@
 
-Що я хочу бачити в репозиторії?
-В Readme.md повинні бути 
-скріншоти того, як виглядає візуалізація результатів, яку робить створена Вами програма, так і команда, якою можна запустити застосунок (наприклад, python main.py --path myfile.pdf).
-Наведені вище файли за описанними вимогами 
-Для тестування наведеного функціоналу, можна використовувати будь-який .pdf файл який заманеться
+To use the program
+- download files with the program
+- add pdf files you want to preprocess to the folder with downloaded files
+- go to Terminal (for macOS) and change directory
+For example, 
+cd /Users/allakopiichenko/Desktop/CV_Internship_Meduzzen/task_2
+-  activate the program, using python3 main.py [name_of_the_file].pdf 
+- check the results in mentioned folder
+
+!(http://https://github.com/AllaKop/CV_Internship_Meduzzen/tree/task_2/Task_2/output_image?raw=true)
+
+!https://github.com/AllaKop/CV_Internship_Meduzzen/blob/task_2/Task_2/output_images/processed_page_1.png?raw=true)
