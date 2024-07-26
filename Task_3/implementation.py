@@ -1,39 +1,25 @@
-# File reads .pdf files and converts them as images png
-
 import os
 import PyPDF2
 import numpy as np
 from PIL import Image
 from pdf2image import convert_from_path
-from data_preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
-
-class PdfToImageConvertor:
-
-# initializing import an image
-    def __init__(self, input_file):
-        self.input_file = input_file
-
-# converting pdf file to an image png file
-    def pdf_to_images(self, output_folder):
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-        images = convert_from_path(self.input_file)
-        image_paths = []
-        for i, image in enumerate(images):
-            image_path = f'{output_folder}/page_{i + 1}.png'
-            image.save(image_path)
-            image_paths.append(image_path)
-        return image_paths
+from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
+from input_output_files_processor import PdfToImageConvertor
 
 class ImagePreProcessor:
-
-    # initializing import an image
+    """
+    The class in bound to implement all classes
+    """
     def __init__(self, image_path):
+        """
+        The method is initializing import an image
+        """
         self.image_path = image_path
 
-    # preprocessing and saving an image
     def preprocess_image(self) :
+        """
+        The method is implementing Preprocessor class and saving image.  
+        """
         image = Image.open(self.image_path)
 
         # Converting image to numpy array for processing
