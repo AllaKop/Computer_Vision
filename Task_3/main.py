@@ -2,7 +2,8 @@
 
 import click
 import os
-from input_output_files_preprocessor import PdfToImageConvertor, ImagePreProcessor
+from input_output_files_processor import PdfToImageConvertor
+from implementation import ImagePreProcessor
 
 @click.command()
 @click.argument('pdf_name')
