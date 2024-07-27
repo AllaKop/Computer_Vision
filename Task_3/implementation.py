@@ -1,66 +1,64 @@
-import os
-import PyPDF2
 import numpy as np
 from PIL import Image
-from pdf2image import convert_from_path
-import cv2
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
 from layout_detector import Layout
+from input_output_processor import PdfToImageConvertor
 
 class ImagePreProcessor:
-    """
-    The class in bound to implement all classes from preprocessor file
-    """
-    def __init__(self, image_path):
+    def __init__(self, pdf_path, output_folder):
         """
-        The method is initializing import an image
+        Initializes the class with PDF path and output folder.
         """
-        self.image_path = image_path
+        self.pdf_path = pdf_path
+        self.output_folder = output_folder
 
     def preprocess_image(self):
         """
-        The method is implementing Preprocessor class and saving image.  
+        Converts PDF to images, processes each image, and returns the processed images.
         """
-        image = Image.open(self.image_path)
+        # Convert PDF to images
+        convertor = PdfToImageConvertor(self.pdf_path)
+        image_paths = convertor.pdf_to_images(self.output_folder)
 
-        # Converting image to numpy array for processing
-        image_np = np.array(image)
+        processed_images = []
+        for image_path in image_paths:
+            image = Image.open(image_path)
+            image_np = np.array(image)
 
-        # Correcting Skew
-        skew_corrector = ImageSkewCorrector(image_np)
-        corrected_image = skew_corrector.correct_skew()
+            # Correct Skew
+            skew_corrector = ImageSkewCorrector(image_np)
+            corrected_image = skew_corrector.correct_skew()
 
-        # Converting to Gray and Binarize
-        binarizer = Binarization(corrected_image)
-        gray_image = binarizer.gray_conversion()
-        binarized_image = binarizer.binarized_conversion(gray_image)
+            # Convert to Gray and Binarize
+            binarizer = Binarization(corrected_image)
+            gray_image = binarizer.gray_conversion()
+            binarized_image = binarizer.binarized_conversion(gray_image)
 
-        # Removing Noise
-        noise_removal = NoiseRemoval(binarized_image)
-        preprocessed_image = noise_removal.gaussian_blurring()
-        return preprocessed_image
+            # Remove Noise
+            noise_removal = NoiseRemoval(binarized_image)
+            preprocessed_image = noise_removal.gaussian_blurring()
 
-class Layout_processor:
-    """
-    The class in bound to implement all classes from layout_detector file
-    """
-    
-    def __init__(self, preprocessed_image):
+            processed_images.append(preprocessed_image)
+        return processed_images
+
+class LayoutProcessor:
+    def __init__(self, preprocessed_images):
         """
-        The method is initializing import an image
+        Initializes the class with preprocessed images.
         """
-        self.import_image = preprocessed_image
+        self.preprocessed_images = preprocessed_images
 
     def define_layout(self):
         """
-        Detects the layout of the preprocessed image and saves the result.
+        Detects the layout of the preprocessed images and returns results.
         """
-        if self.import_image is None:
-            raise RuntimeError("Preprocessed image is not available. Please call preprocess_image first.")
+        results = []
+        for preprocessed_image in self.preprocessed_images:
+            if preprocessed_image is None:
+                raise RuntimeError("Preprocessed image is not available.")
 
-        # Convert numpy array back to PIL Image if necessary
-        preprocessed_image_pil = Image.fromarray(self.import_image)
-
-        # Initialize layout detector with the preprocessed image
-        layout_detector = Layout(preprocessed_image_pil)
-        image_with_boxes, layout = layout_detector.detect_image_layout()
+            preprocessed_image_pil = Image.fromarray(preprocessed_image)
+            layout_detector = Layout(np.array(preprocessed_image_pil))
+            image_with_boxes, layout = layout_detector.detect_image_layout()
+            results.append((image_with_boxes, layout))
+        return results

@@ -7,20 +7,11 @@ class Layout:
     """
     The class uses preprocessed documents and creates layout of the document
     """
-    def __init__(self, image_path):
+    def __init__(self, import_image):
         """
         The method is initializing image that will be segmented and model that will be used
         """
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"The file at {image_path} does not exist.")
-        
-        self.image = cv2.imread(image_path)
-
-        if self.image is None:
-            raise ValueError(f"Could not read the image at {image_path}. Check the image or/and image path integrity")
-
-        self.image = self.image[..., ::-1]  
-
+        self.import_image = import_image[..., ::-1]  
         try:
             self.model = lp.Detectron2LayoutModel(
                 'lp://PubLayNet/mask_rcnn_X_101_32x8d_FPN_3x/config',
@@ -34,10 +25,9 @@ class Layout:
         """
         The method is detecting layout of the image
         """
-        layout = self.model.detect(self.image)
-        image_with_boxes_pil = lp.draw_box(self.image, layout, box_width=3)
+        layout = self.model.detect(self.import_image)
+        image_with_boxes_pil = lp.draw_box(self.import_image, layout, box_width=3)
         
         # Convert PIL image to NumPy array
         image_with_boxes_np = np.array(image_with_boxes_pil)
         return image_with_boxes_np, layout       
-
