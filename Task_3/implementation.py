@@ -5,12 +5,11 @@ from PIL import Image
 from pdf2image import convert_from_path
 import cv2
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
-from input_output_files_processor import PdfToImageConvertor
 from layout_detector import Layout
 
 class ImagePreProcessor:
     """
-    The class in bound to implement all classes
+    The class in bound to implement all classes from preprocessor file
     """
     def __init__(self, image_path):
         """
@@ -38,19 +37,30 @@ class ImagePreProcessor:
 
         # Removing Noise
         noise_removal = NoiseRemoval(binarized_image)
-        final_image = noise_removal.gaussian_blurring()
+        preprocessed_image = noise_removal.gaussian_blurring()
+        return preprocessed_image
 
-        return Image.fromarray(final_image)
+class Layout_processor:
+    """
+    The class in bound to implement all classes from layout_detector file
+    """
+    
+    def __init__(self, preprocessed_image):
+        """
+        The method is initializing import an image
+        """
+        self.import_image = preprocessed_image
 
     def define_layout(self):
         """
-        This method is implementing Layout class 
+        Detects the layout of the preprocessed image and saves the result.
         """
-        layout_detector = Layout(PdfToImageConvertor.image_paths)
-        image_with_boxes, layout = layout_detector.detect_image_layout()
+        if self.import_image is None:
+            raise RuntimeError("Preprocessed image is not available. Please call preprocess_image first.")
 
-        # Save the resulting image
-        output_path = "/Users/allakopiichenko/Desktop/CV_Internship_Meduzzen/Task_3/processed_page_1_with_boxes.png"
-        cv2.imwrite(output_path, image_with_boxes[..., ::-1])  # Convert RGB back to BGR for saving
-        print(f"Image with layout boxes saved at {output_path}")
-      
+        # Convert numpy array back to PIL Image if necessary
+        preprocessed_image_pil = Image.fromarray(self.import_image)
+
+        # Initialize layout detector with the preprocessed image
+        layout_detector = Layout(preprocessed_image_pil)
+        image_with_boxes, layout = layout_detector.detect_image_layout()

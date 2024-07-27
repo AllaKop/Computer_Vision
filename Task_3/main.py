@@ -2,22 +2,21 @@
 
 import click
 import os
-from input_output_files_processor import PdfToImageConvertor
-from implementation import ImagePreProcessor
+from implementation import ImagePreProcessor, Layout_processor
+
 
 @click.command()
 @click.argument('pdf_name')
 @click.option('--path', '-p', default='output_images', help='Output folder path')
 
 def launch_program(pdf_name, path):
-    pdf_path = os.path.abspath(pdf_name)
-    converter = PdfToImageConvertor(pdf_path)
-    image_paths = converter.pdf_to_images(path)
+    pdf_paths = os.path.abspath(pdf_name)
 
-    for image_path in image_paths:
-        preprocessor = ImagePreProcessor(image_path)
+
+    for pdf_path in pdf_paths:
+        preprocessor = ImagePreProcessor(pdf_path)
         processed_image = preprocessor.preprocess_image()
-        processed_image.save(os.path.join(path, f"processed_{os.path.basename(image_path)}"))
+        layouted_image = Layout_processor.define_layout()
     
 
 if __name__ == '__main__':
