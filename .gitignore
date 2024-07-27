@@ -1,3 +1,7 @@
 # Ignore all pyc files
 *.pyc
 
+# Ignore all png files
+.png
+
+
