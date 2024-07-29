@@ -1,44 +1,47 @@
 import numpy as np
-from PIL import Image
-from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
+import PIL.Image as Image
+import scipy.ndimage.interpolation as inter
+import cv2
 
-class PreProcessor:
-    """
-    The class implements preprocessing
-    """
-    def __init__(self, image_paths):
-        """
-        Initializes the class with paths of images converted from the pdf file.
-        """
-        self.image_paths = image_paths
+class ImageSkewCorrector:
+    def __init__(self, import_image):
+        self.import_image = np.array(import_image)
 
-    def preprocess_images(self):
-        """
-        Processes each image in the list of image paths, and returns the processed images.
-        """
-        processed_images = []
-        for image_path in self.image_paths:
-            image = Image.open(image_path).convert('RGB')  # Ensure image is in RGB format
-            image_np = np.array(image)
+    def find_score(self, angle):
+        data = inter.rotate(self.import_image, angle, reshape=False, order=0)
+        hist = np.sum(data, axis=1)
+        score = np.sum((hist[1:] - hist[:-1]) ** 2)
+        return score
+    
+    def correct_skew(self):
+        delta = 1
+        limit = 5
+        angles = np.arange(-limit, limit + delta, delta)
+        scores = [self.find_score(angle) for angle in angles]
 
-            # Correct Skew
-            skew_corrector = ImageSkewCorrector(image_np)
-            corrected_image = skew_corrector.correct_skew()
+        best_angle = angles[scores.index(max(scores))]
+        print('Best angle:', best_angle)
 
-            # Convert to Gray and Binarize
-            binarizer = Binarization(corrected_image)
-            gray_image = binarizer.gray_conversion()
-            binarized_image = binarizer.binarized_conversion(gray_image)
+        data = inter.rotate(self.import_image, best_angle, reshape=False, order=0)
+        img_skew_corrected = Image.fromarray(data.astype('uint8')).convert('RGB')
+        return img_skew_corrected
 
-            # Remove Noise
-            noise_removal = NoiseRemoval(binarized_image)
-            preprocessed_image = noise_removal.gaussian_blurring()
+class Binarization:
+    def __init__(self, img_skew_corrected):
+        self.import_image = np.array(img_skew_corrected)
 
-            # Ensure preprocessed image is in correct numerical format
-            if preprocessed_image.dtype == np.float32 or preprocessed_image.dtype == np.float64:
-                preprocessed_image = (preprocessed_image * 255).astype(np.uint8)
-            elif preprocessed_image.dtype != np.uint8:
-                raise ValueError(f"Unexpected image dtype: {preprocessed_image.dtype}")
+    def gray_conversion(self):
+        self.gray_image = cv2.cvtColor(self.import_image, cv2.COLOR_RGB2GRAY)
+        return self.gray_image
 
-            processed_images.append(preprocessed_image)
-        return processed_images
+    def binarized_conversion(self, gray_image):
+        binarized_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        return binarized_image
+
+class NoiseRemoval:
+    def __init__(self, binarized_image):
+        self.import_image = binarized_image
+
+    def gaussian_blurring(self):
+        noise_removed_image = cv2.GaussianBlur(self.import_image, (5, 5), 0)
+        return noise_removed_image
