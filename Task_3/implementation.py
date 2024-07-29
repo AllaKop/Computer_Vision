@@ -5,11 +5,12 @@ from layout_detector import Layout
 from input_output_processor import PdfToImageConvertor
 
 class ImagePreProcessor:
-    def __init__(self, pdf_path):
+    def __init__(self, pdf_path, output_folder):
         """
         Initializes the class with PDF path.
         """
         self.pdf_path = pdf_path
+        self.output_folder = output_folder
 
     def preprocess_image(self):
         """
