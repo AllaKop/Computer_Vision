@@ -19,13 +19,12 @@ def launch_program(pdf_name, path):
     preprocessed_images = preprocessor.preprocess_images()
 
     # Step 3: Detect layout
-    layout_processor = Layout(image_paths)
+    layout_processor = Layout(preprocessed_images)
     results = layout_processor.detect_image_layout()
 
     # Step 4: Save results
     output_saver = Output_Saver(results, path)
     output_saver.saver()
     
-
 if __name__ == '__main__':
     launch_program()

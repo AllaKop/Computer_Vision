@@ -1,15 +1,16 @@
 import layoutparser as lp
 import numpy as np
+from PIL import Image
 
 class Layout:
     """
     The class uses preprocessed documents and creates layout of the document
     """
-    def __init__(self, preprocessed_images):
+    def __init__(self, noise_removed_image):
         """
-        The method is initializing the images that will be segmented and the model that will be used
+        The method is initializing the image that will be segmented and the model that will be used
         """
-        self.preprocessed_images = preprocessed_images
+        self.import_image = np.array(noise_removed_image)[..., ::-1]  # Convert to BGR if needed
         self.model = lp.Detectron2LayoutModel(
             'lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
             extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
@@ -18,23 +19,20 @@ class Layout:
 
     def detect_image_layout(self):
         """
-        The method detects the layout of the images.
+        The method detects the layout of the image.
         """
-        results = []
-        for image in self.preprocessed_images:
-            # Ensure image is in correct numerical format
-            if image.dtype != np.uint8:
-                raise ValueError(f"Image dtype should be np.uint8, but got {image.dtype}")
+        # Ensure the image is in the expected format (H, W, C) and values are in range [0, 255]
+        if self.import_image.dtype != np.uint8:
+            self.import_image = (self.import_image * 255).astype(np.uint8)
 
-            layout = self.model.detect(image)
-            
-            # Ensure layout detection results are in the expected format
-            if not isinstance(layout, list):
-                raise ValueError(f"Expected a list of detected objects but got {type(layout)}")
+        layout = self.model.detect(self.import_image)
+        
+        # Ensure layout detection results are in expected format
+        if not isinstance(layout, list):  # or check for other types as needed
+            raise ValueError(f"Expected a list of detected objects but got {type(layout)}")
 
-            # Draw boxes on the image
-            image_with_boxes_pil = lp.draw_box(image, layout, box_width=3)
-            image_with_boxes_np = np.array(image_with_boxes_pil)
+        # Draw boxes on the image
+        image_with_boxes_pil = lp.draw_box(self.import_image, layout, box_width=3)
+        image_with_boxes_np = np.array(image_with_boxes_pil)
 
-            results.append((image_with_boxes_np, layout))
-        return results
+        return image_with_boxes_np, layout
