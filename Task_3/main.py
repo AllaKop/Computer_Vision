@@ -1,22 +1,29 @@
 import click
-import os
-from implementation import PdfProcessingPipeline
+from implementation import Input, PreProcessor, LayoutProcessor, Output_Saver
 
 @click.command()
 @click.argument('pdf_name')
-@click.option('--image-folder', '-i', default='images', help='Folder to save images extracted from PDF')
-@click.option('--result-folder', '-r', default='results', help='Folder to save processed results')
-def launch_program(pdf_name, image_folder, result_folder):
-    pdf_path = os.path.abspath(pdf_name)
+@click.option('--path', '-p', default='output_images', help='Output folder path')
+def launch_program(pdf_name, path):
+    """
+    CLI function to process a PDF file by converting it to images, preprocessing the images,
+    detecting layout, and saving the results.
+    """
+    # Step 1: Convert PDF to images
+    pdf_to_image_convertor = Input(pdf_name, path)  # Pass the path as the output folder
+    image_paths = pdf_to_image_convertor.process_pdf()
 
-    if not os.path.isfile(pdf_path):
-        print(f"The file {pdf_path} does not exist.")
-        return
+    # Step 2: Preprocess images
+    preprocessor = PreProcessor(image_paths)
+    preprocessed_images = preprocessor.preprocess_images()
 
-    pipeline = PdfProcessingPipeline(pdf_path, image_folder, result_folder)
-    pipeline.process_pdf()
+    # Step 3: Detect layout
+    layout_processor = LayoutProcessor(preprocessed_images)
+    results = layout_processor.define_layout()
 
-    print(f"Processing complete. Results saved to {result_folder}")
+    # Step 4: Save results
+    output_saver = Output_Saver(results, path)
+    output_saver.saver()
 
 if __name__ == '__main__':
     launch_program()

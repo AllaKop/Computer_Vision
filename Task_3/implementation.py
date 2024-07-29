@@ -1,24 +1,44 @@
+# implementation.py
 import numpy as np
-import os
 from PIL import Image
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
 from layout_detector import Layout
 from input_output_processor import PdfToImageConvertor, ResultSaver
 
-class ImagePreProcessor:
-    def __init__(self, image_path):
+class Input:
+    """
+    The class implements input processing
+    """
+    def __init__(self, pdf_path, output_folder):
         """
-        Initializes the class with output_folder of images converted from pdf file.
+        Initializes the class with the PDF path and the output folder.
         """
-        self.image_path = image_path
+        self.pdf_path = pdf_path
+        self.output_folder = output_folder
 
-    def preprocess_image(self):
+    def process_pdf(self):
         """
-        Processes each image in the folder, and returns the processed images.
+        Processes the PDF file by converting it to images.
+        """
+        pdf_to_image_convertor = PdfToImageConvertor(self.pdf_path)
+        return pdf_to_image_convertor.pdf_to_images(self.output_folder)
+
+class PreProcessor:
+    """
+    The class implements preprocessing
+    """
+    def __init__(self, image_paths):
+        """
+        Initializes the class with paths of images converted from the pdf file.
+        """
+        self.image_paths = image_paths
+
+    def preprocess_images(self):
+        """
+        Processes each image in the list of image paths, and returns the processed images.
         """
         processed_images = []
-        for image_name in os.listdir(self.image_folder):
-            image_path = os.path.join(self.image_folder, image_name)
+        for image_path in self.image_paths:
             image = Image.open(image_path)
             image_np = np.array(image)
 
@@ -39,11 +59,16 @@ class ImagePreProcessor:
         return processed_images
 
 class LayoutProcessor:
-    def __init__(self, processed_images):
+    """
+    The class implements layout 
+    """
+    def __init__(self, preprocessed_images):
         """
         Initializes the class with preprocessed images.
         """
-        self.preprocessed_images = processed_images
+        self.preprocessed_images = preprocessed_images
+        self.model = Layout('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
+                            label_map={0: "Text", 1: "Title", 2: "List", 3: "Table", 4: "Figure"})
 
     def define_layout(self):
         """
@@ -55,31 +80,27 @@ class LayoutProcessor:
                 raise RuntimeError("Preprocessed image is not available.")
 
             preprocessed_image_pil = Image.fromarray(preprocessed_image)
-            layout_detector = Layout(np.array(preprocessed_image_pil))
-            image_with_boxes, layout = layout_detector.detect_image_layout()
-            results.append((image_with_boxes, layout))
+            layout = self.model.detect(np.array(preprocessed_image_pil))
+            image_with_boxes_pil = self.model.draw_box(preprocessed_image_pil, layout, box_width=3)
+            image_with_boxes_np = np.array(image_with_boxes_pil)
+
+            results.append((image_with_boxes_np, layout))
         return results
 
+class Output_Saver:
+    """
+    The class implements output processing
+    """
+    def __init__(self, results, output_folder):
+        """
+        Initializes the class with layout images.
+        """
+        self.output = results
+        self.output_folder = output_folder
 
-class PdfProcessingPipeline:
-    def __init__(self, pdf_path, image_folder, result_folder):
-        self.pdf_path = pdf_path
-        self.image_folder = image_folder
-        self.result_folder = result_folder
-
-    def process_pdf(self):
-        # Convert PDF to images
-        convertor = PdfToImageConvertor(self.pdf_path)
-        image_paths = convertor.pdf_to_images(self.image_folder)
-
-        # Preprocess images
-        preprocessor = ImagePreProcessor(image_paths)
-        processed_images = preprocessor.preprocess_image()
-
-        # Detect layout
-        layout_processor = LayoutProcessor(processed_images)
-        results = layout_processor.define_layout()
-
-        # Save results
-        saver = ResultSaver(self.result_folder)
-        saver.save_results(results)
+    def saver(self):
+        """
+        Saves results
+        """
+        result_saver = ResultSaver(self.output_folder)
+        result_saver.save_images(self.output)
