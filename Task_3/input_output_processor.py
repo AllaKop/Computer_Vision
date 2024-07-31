@@ -48,17 +48,26 @@ class PdfToImageConvertor:
 class ResultSaver:
     """
     Saves processed images.
+
+    Attributes: 
+        output_folder: a folder to save images.
     """
     def __init__(self, output_folder):
+        """
+        Initializes an output_folder.
+
+        Args: 
+            output_folder: a folder to save images
+        """
         self.output_folder = output_folder
 
-    def save_images(self, results):
+    def save_images(self, images_with_layout):
         """
-        Saves the processed images to the output folder.
-        """
-        if not os.path.exists(self.output_folder):
-            os.makedirs(self.output_folder)
+        Saves the processed (for now after layout) images to the output folder overwriting existing.
 
-        for i, (image_with_boxes, layout) in enumerate(results):
+        Args: 
+            images_with_layout: A list of images with layouts paths.
+        """
+        for i, (image_with_boxes, layout) in enumerate(images_with_layout):
             output_image_path = os.path.join(self.output_folder, f'page_{i + 1}_layout.png')
             Image.fromarray(image_with_boxes).save(output_image_path)
