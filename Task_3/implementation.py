@@ -34,7 +34,8 @@ class Input:
         A folder with converted images.
         """
         pdf_to_image_convertor = PdfToImageConvertor(self.pdf_path)
-        return pdf_to_image_convertor.pdf_to_images(self.output_folder)
+        images_paths = pdf_to_image_convertor.pdf_to_images(self.output_folder)
+        return images_paths
 
 class PreProcessor:
     """
@@ -43,18 +44,18 @@ class PreProcessor:
     Attributes:
         image_paths: A list of path of the images.
     """
-    def __init__(self, image_paths):
+    def __init__(self, images_paths):
         """
         Initializes image paths.
 
         Args: 
-            image_path: a list of image paths.
+            images_path: a list of images paths.
         """
-        self.image_paths = image_paths
+        self.images_paths = images_paths
 
     def preprocess_images(self):
         processed_images = []
-        for image_path in self.image_paths:
+        for image_path in self.images_paths:
             image = Image.open(image_path)
 
             skew_corrector = ImageSkewCorrector(image)
