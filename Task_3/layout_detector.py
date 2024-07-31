@@ -1,5 +1,6 @@
 import layoutparser as lp
 import numpy as np
+import preprocessor
 from PIL import Image
 
 class Layout_detector:
@@ -15,6 +16,8 @@ class Layout_detector:
         Args:
             noise_removed_image: an image after the last step (noise removing) of preprocessing.
         """
+        noise_removed_image = Image.fromarray(noise_removed_image)
+        noise_removed_image = noise_removed_image.convert('RGB')
         self.import_image = np.array(noise_removed_image)[..., ::-1] 
         self.model = lp.Detectron2LayoutModel(
             'lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
@@ -29,12 +32,9 @@ class Layout_detector:
         Returns: 
             images_with_layout: A list of images with layouts paths.
         """
-        images_with_layout = []
         layout = self.model.detect(self.import_image)
 
         # Draw boxes on the image
         image_with_boxes_pil = lp.draw_box(self.import_image, layout, box_width=3)
-        image_with_boxes_np = np.array(image_with_boxes_pil)
-        images_with_layout.append(image_with_boxes_np, layout)
 
-        return images_with_layout
+        return image_with_boxes_pil

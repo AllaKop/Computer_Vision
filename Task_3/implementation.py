@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+from pdf2image import convert_from_path
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
 from layout_detector import Layout_detector
 from input_output_processor import PdfToImageConvertor, ResultSaver
@@ -22,6 +23,7 @@ class Implementation:
         Args:
             pdf_path: A path to a .pdf file.
             output_folder: A folder to save PNG files. 
+            final_output: A folder to save final images.
         """
         self.pdf_path = pdf_path
         self.output_folder = output_folder
@@ -73,16 +75,10 @@ class Implementation:
         Returns: 
             layout_images_paths: A list of paths to images with detected layouts.
         """
-        results = []
+        layout_images_paths = []
         for image in preprocessed_images:
             layout_detector = Layout_detector(image)
-            results.extend(layout_detector.detect_image_layout())
-
-        layout_images_paths = []
-        for i, (image_with_boxes_np, layout) in enumerate(results):
-            output_image_path = f'{self.output_folder}/page_{i + 1}_layout.png'
-            Image.fromarray(image_with_boxes_np).save(output_image_path)
-            layout_images_paths.append(output_image_path)
+            layout_images_paths.extend(layout_detector.detect_image_layout())
 
         return layout_images_paths
 

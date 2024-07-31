@@ -10,13 +10,14 @@ class ImageSkewCorrector:
     Attributes:
         import_image: An input image.
     """
-    def __init__(self, import_image):
+    def __init__(self, import_paths):
         """
         Initializes an import_image and converts in to NumPy array.
 
         Args: 
             import_image: an input image.
         """
+        import_image = Image.open(import_paths)
         import_image = import_image.convert('RGB')
         self.import_image = np.array(import_image)
 

@@ -52,22 +52,34 @@ class ResultSaver:
     Attributes: 
         output_folder: a folder to save images.
     """
-    def __init__(self, output_folder):
+    def __init__(self, image_with_boxes_pil):
         """
-        Initializes an output_folder.
+        Initializes an final output folder.
 
         Args: 
-            output_folder: a folder to save images
+            final_images: final images
         """
-        self.output_folder = output_folder
+        self.final_images = image_with_boxes_pil
 
-    def save_images(self, images_with_layout):
+    def save_images(self,  final_output):
         """
         Saves the processed (for now after layout) images to the output folder overwriting existing.
 
         Args: 
-            images_with_layout: A list of images with layouts paths.
+            final_output: A folder to same final images.
+
+        Returns:
+            final_image_paths: A list of images paths.
         """
-        for i, (image_with_boxes, layout) in enumerate(images_with_layout):
-            output_image_path = os.path.join(self.output_folder, f'page_{i + 1}_layout.png')
-            Image.fromarray(image_with_boxes).save(output_image_path)
+
+        if not os.path.exists(self.final_output):
+            os.makedirs(self.final_output)
+        
+        final_image_paths = []
+        final_images = convert_from_path(self.final_images)
+        for i, final_image in enumerate(final_images):
+            final_image_path = os.path.join(self.final_output, f'page_{i + 1}_layout.png')
+            final_image.save(final_image_path)
+            final_image_paths.append(final_image_path)
+
+        return final_image_paths
