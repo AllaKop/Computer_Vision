@@ -53,12 +53,6 @@ class PreProcessor:
         self.image_paths = image_paths
 
     def preprocess_images(self):
-        """
-        Preprocessing images.
-
-        Returns:
-            processed_images: a list of paths to processed images.
-        """
         processed_images = []
         for image_path in self.image_paths:
             image = Image.open(image_path)
@@ -96,8 +90,10 @@ def layout_detection(self):
     """
     Detects layout.
     """
-    layout_detector = Layout_detector(self.preprocessed_image)
-    results = layout_detector.detect_image_layout()
+    results = []
+    for image in self.processed_images:
+        layout_detector = Layout_detector(image)
+        results.extend(layout_detector.detect_image_layout())
 
     for i, (image_with_boxes_np, layout) in enumerate(results):
         output_image_path = (f'path/to/output_page_{i + 1}_layout.png')
@@ -105,28 +101,20 @@ def layout_detection(self):
 
 
 class Output_Saver:
-    """
-    Implements saving of processed images (for now after layout) (input_output_processor.py)
-
-    Attributes:
-        output_image_path:  a list of paths to processed images.
-        output_folder: an output folder.
-
-    """
-    def __init__(self, output_image_path, output_folder):
+    def __init__(self, images_with_layout, output_folder):
         """
-        Initializes image paths.
+        Initializes with images and output folder.
 
         Args: 
-            output_image_path:  a list of paths to images with layout.
-            output_folder: an output folder.
+            images_with_layout: List of processed images with layout.
+            output_folder: Folder to save images.
         """
-        self.output = output_image_path
+        self.images_with_layout = images_with_layout
         self.output_folder = output_folder
 
     def saver(self):
         """
-        Saves images to output_folder
+        Saves images to the output folder.
         """
         result_saver = ResultSaver(self.output_folder)
-        result_saver.save_images(self.output)
+        result_saver.save_images(self.images_with_layout)
