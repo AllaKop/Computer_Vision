@@ -1,15 +1,15 @@
-"""The file is bound to implement all other files and clases"""
-
 import numpy as np
 from PIL import Image
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
 from layout_detector import Layout_detector
 from input_output_processor import PdfToImageConvertor, ResultSaver
 
-
-class Input:
+class Implementation:
     """
-    Implements input processing - excepting .pdf file and converts it to image PNG (input_output_processor.py)
+    Implements:
+        - input_output_processor.py
+        - preprocessor.py
+        - layout_detector.py
 
     Attributes:
         pdf_path: A path to a .pdf file.
@@ -28,34 +28,27 @@ class Input:
 
     def process_pdf(self):
         """
-        An implementation of PdftoImageConvertot.
+        Converts PDF to images using PdfToImageConvertor.
 
         Returns: 
-        A folder with converted images.
+            images_paths: A list of paths to the converted images.
         """
         pdf_to_image_convertor = PdfToImageConvertor(self.pdf_path)
         images_paths = pdf_to_image_convertor.pdf_to_images(self.output_folder)
         return images_paths
 
-class PreProcessor:
-    """
-    Implements preprocessing (preprocessor.py)
-
-    Attributes:
-        image_paths: A list of path of the images.
-    """
-    def __init__(self, images_paths):
+    def preprocess_images(self, images_paths):
         """
-        Initializes image paths.
+        Applies preprocessing steps to images.
 
-        Args: 
-            images_path: a list of images paths.
+        Args:
+            images_paths: A list of image paths.
+
+        Returns: 
+            preprocessed_images: A list of processed images.
         """
-        self.images_paths = images_paths
-
-    def preprocess_images(self):
-        processed_images = []
-        for image_path in self.images_paths:
+        preprocessed_images = []
+        for image_path in images_paths:
             image = Image.open(image_path)
 
             skew_corrector = ImageSkewCorrector(image)
@@ -67,55 +60,41 @@ class PreProcessor:
 
             noise_removal = NoiseRemoval(binarized_image)
             preprocessed_image = noise_removal.gaussian_blurring()
-            processed_images.append(preprocessed_image)
-        return processed_images
+            preprocessed_images.append(preprocessed_image)
+        return preprocessed_images
 
-class Layout:
-     """
-    Implements layout detection (layout_detector.py)
-
-    Attributes:
-        image_paths: A list of path of the images.
-    """
-def __init__(self, processed_images):
+    def layout_detection(self, preprocessed_images):
         """
-        Initializes image paths.
+        Detects layout in preprocessed images.
 
-        Args: 
-            image_path: a list of image paths after preprocessing.
+        Args:
+            preprocessed_images: A list of preprocessed images.
+
+        Returns: 
+            layout_images_paths: A list of paths to images with detected layouts.
         """
-        image_paths = processed_images
-        self.preprocessed_image = Image.open(image_paths)
+        results = []
+        for image in preprocessed_images:
+            layout_detector = Layout_detector(image)
+            results.extend(layout_detector.detect_image_layout())
 
-def layout_detection(self):
-    """
-    Detects layout.
-    """
-    results = []
-    for image in self.processed_images:
-        layout_detector = Layout_detector(image)
-        results.extend(layout_detector.detect_image_layout())
+        layout_images_paths = []
+        for i, (image_with_boxes_np, layout) in enumerate(results):
+            output_image_path = f'{self.output_folder}/page_{i + 1}_layout.png'
+            Image.fromarray(image_with_boxes_np).save(output_image_path)
+            layout_images_paths.append(output_image_path)
 
-    for i, (image_with_boxes_np, layout) in enumerate(results):
-        output_image_path = (f'path/to/output_page_{i + 1}_layout.png')
-        Image.fromarray(image_with_boxes_np).save(output_image_path)
+        return layout_images_paths
 
-
-class Output_Saver:
-    def __init__(self, images_with_layout, output_folder):
+    def saver(self, layout_images_paths):
         """
-        Initializes with images and output folder.
+        Saves images with detected layouts to the output folder.
 
-        Args: 
-            images_with_layout: List of processed images with layout.
-            output_folder: Folder to save images.
-        """
-        self.images_with_layout = images_with_layout
-        self.output_folder = output_folder
+        Args:
+            layout_images_paths: A list of paths to images with detected layouts.
 
-    def saver(self):
-        """
-        Saves images to the output folder.
+        Returns:
+            None
         """
         result_saver = ResultSaver(self.output_folder)
-        result_saver.save_images(self.images_with_layout)
+        result_saver.save_images(layout_images_paths)
