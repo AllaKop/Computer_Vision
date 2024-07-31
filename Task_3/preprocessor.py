@@ -8,7 +8,7 @@ class ImageSkewCorrector:
     Corrects skew of the input images.
 
     Attributes:
-        import_image: image that will be skew corrected.
+        import_image: An input image.
     """
     def __init__(self, import_image):
         """

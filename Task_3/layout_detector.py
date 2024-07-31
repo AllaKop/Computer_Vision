@@ -4,11 +4,16 @@ from PIL import Image
 
 class Layout:
     """
-    The class uses preprocessed documents and creates layout of the document
+    Uses preprocessed documents and creates layout of the document.
+
+    Attributes: An input image (after preprocessing).
     """
     def __init__(self, noise_removed_image):
         """
-        The method is initializing the image that will be segmented and the model that will be used
+        Initializes an image that will be segmented and the model that will be used.
+
+        Args:
+            noise_removed_image: an image after the last step (noise removing) of preprocessing.
         """
         self.import_image = np.array(noise_removed_image)[..., ::-1]  # Convert to BGR if needed
         self.model = lp.Detectron2LayoutModel(
@@ -19,17 +24,13 @@ class Layout:
 
     def detect_image_layout(self):
         """
-        The method detects the layout of the image.
-        """
-        # Ensure the image is in the expected format (H, W, C) and values are in range [0, 255]
-        if self.import_image.dtype != np.uint8:
-            self.import_image = (self.import_image * 255).astype(np.uint8)
+        Detects the layout of the image.
 
+        Returns: 
+            image_with_boxes_np: An image with created layout in NumPy array format.
+            layout: a list of detected layout objects, bounding boxes, labels, confidence scores.
+        """
         layout = self.model.detect(self.import_image)
-        
-        # Ensure layout detection results are in expected format
-        if not isinstance(layout, list):  # or check for other types as needed
-            raise ValueError(f"Expected a list of detected objects but got {type(layout)}")
 
         # Draw boxes on the image
         image_with_boxes_pil = lp.draw_box(self.import_image, layout, box_width=3)
