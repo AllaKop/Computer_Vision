@@ -20,7 +20,7 @@ class Layout_detector:
         noise_removed_image = noise_removed_image.convert('RGB')
         self.import_image = np.array(noise_removed_image)[..., ::-1] 
         self.model = lp.Detectron2LayoutModel(
-            'lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
+            'lp://PubLayNet/mask_rcnn_X_101_32x8d_FPN_3x/config',
             extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
             label_map={0: 'Text', 1: 'Title', 2: 'List', 3: 'Table', 4: 'Figure'}
         )
