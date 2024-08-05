@@ -10,4 +10,4 @@ cd /Users/allakopiichenko/Desktop/CV_Internship_Meduzzen/task_3
 
 ![Alt text](https://github.com/AllaKop/CV_Internship_Meduzzen/blob/task_2/Task_2/output_images/page_1.png?raw=true)
 
-![Alt text](https://github.com/AllaKop/CV_Internship_Meduzzen/blob/task_2/Task_2/output_images/processed_page_1.png?raw=true)
+![Alt text](https://github.com/AllaKop/Computer_Vision/blob/task_3/Task_3/output_images/layout_page_1.png?raw=true)
