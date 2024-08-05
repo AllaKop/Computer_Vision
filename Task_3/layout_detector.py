@@ -7,7 +7,7 @@ class Layout_detector:
     """
     Uses preprocessed documents and creates layout of the document.
 
-    Attributes: An input image (after preprocessing).
+    Attributes: an input image (after preprocessing).
     """
     def __init__(self, noise_removed_image):
         """
@@ -30,7 +30,7 @@ class Layout_detector:
         Detects the layout of the image.
 
         Returns: 
-            images_with_layout: A list of images with layouts paths.
+            images_with_layout: a list of images with layouts paths.
         """
         layout = self.model.detect(self.import_image)
 

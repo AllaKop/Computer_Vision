@@ -5,31 +5,29 @@ import cv2
 
 class ImageSkewCorrector:
     """
-    Corrects skew of the input images.
+    Corrects skews of an image.
 
     Attributes:
-        import_image: An input image.
+        import_image: an PNG image. 
     """
-    def __init__(self, import_paths):
+    def __init__(self, import_image):
         """
-        Initializes an import_image and converts in to NumPy array.
+        Initializes an image that will be corrected.
 
-        Args: 
-            import_image: an input image.
+        Args:
+        import_image: an PNG image. 
         """
-        import_image = Image.open(import_paths)
-        import_image = import_image.convert('RGB')
         self.import_image = np.array(import_image)
 
     def find_score(self, angle):
         """
-        Finds the best score for the screw correction.
+        Finds the best score for the skew correction.
 
         Args: 
-            angle: An angle for the correction.
+            angle: an angle for the correction.
 
         Returns:
-            score: An computed score, which is used to evaluate how well the image aligns for the given rotation angle.
+            score: a score for the correction.
         """
         data = inter.rotate(self.import_image, angle, reshape=False, order=0)
         hist = np.sum(data, axis=1)
@@ -38,10 +36,10 @@ class ImageSkewCorrector:
     
     def correct_skew(self):
         """
-        Corrects skew of an image.
+        Applies the best score and saving image with the correct skew.
 
-        Returns: 
-            img_skew_corrected: an image with corrected skew.
+        Returns:
+            img_skew_corrected: an image with a corrected skew
         """
         delta = 1
         limit = 5
@@ -57,59 +55,65 @@ class ImageSkewCorrector:
 
 class Binarization:
     """
-    Binatizes the skew corrected image RGB.
+    Binarizes an image after skew correction.
 
     Attributes:
-        import_image: An input image
+        img_skew_corrected: an PNG image with corrected skew. 
     """
     def __init__(self, img_skew_corrected):
         """
-        Initializes an import image and assign it with the value of the RGB image after skew correction converted to Numpy array.
+        Initializes an image.
 
-        Args:
-            img_skew_corrected: An RGB image after skew correction
+        Args: 
+            img_skew_corrected: an PNG image with corrected skew.
         """
         self.import_image = np.array(img_skew_corrected)
 
     def gray_conversion(self):
         """
-        Converts an RGB image to gray shades image.
-
-        Returns: 
-            gray_image: An image after gray shades correction.
-        """
-        gray_image = cv2.cvtColor(self.import_image, cv2.COLOR_RGB2GRAY)
-        return gray_image
-
-    def binarized_conversion(self, gray_image):
-        """
-        Binarizes a gray shades image.
+        Converts a colored image to gray scale.
 
         Returns:
-            binarized_image: an image of binarized colors. 
+            gray_image: an image in gray scale.
         """
-        binarized_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        self.gray_image = cv2.cvtColor(self.import_image, cv2.COLOR_BGR2GRAY)
+        return self.gray_image
+
+    def binarized_conversion (self, gray_image):
+        """
+        Converts a gray scale image to binarized image.
+
+        Args: 
+            gray_image: an image in gray scale.
+
+        Returns:
+            binarized_image: an image binarized.
+        """
+        binarized_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11,2)
         return binarized_image
 
 class NoiseRemoval:
     """
-    Removes noises of a binarized image.
+    Removes noise.
 
     Attributes:
-        import_image: An input image.
+        binarized_image: an image after binarization. 
     """
     def __init__(self, binarized_image):
         """
-        Initializes an import_image and assigns it with value of binarized image.
+        Initializes an image.
+
+        Args: 
+            binarized_imaged: an image after binarization. 
         """
         self.import_image = binarized_image
 
-    def gaussian_blurring(self):
+    def gaussian_blurring (self):
         """
-        Removes noises from an image.
+        Uses Gaussian blurring for noise removal.
 
         Returns:
-            noise_removed_image: an image after removed noises.
+            noise_removed_image: an image after noise removal. 
         """
-        noise_removed_image = cv2.GaussianBlur(self.import_image, (5, 5), 0)
+        noise_removed_image = cv2.GaussianBlur(self.import_image, (5,5),0)
         return noise_removed_image

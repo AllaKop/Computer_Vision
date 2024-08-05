@@ -1,5 +1,10 @@
 import click
-from implementation import Implementation
+import os
+from input_output_processor import PdfToImageConvertor, ImagePreProcessor, Layout
+
+"""
+A CLI for running the program.
+"""
 
 @click.command()
 @click.argument('pdf_name')
@@ -7,27 +12,23 @@ from implementation import Implementation
 
 def launch_program(pdf_name, path):
     """
-    CLI function to process a PDF file by converting it to images, preprocessing the images,
-    detecting layout, and saving the results.
+    Runs the code.
 
-    Args: 
-        pdf_name: A name of pdf file.
-        path: A path to a pdf file.
+    Args:
+        pdf_name: a name of pdf file
+        path: a path to a pdf file
     """
-    # Create an instance of the Implementation class
-    impl = Implementation(pdf_name, path)
+    pdf_path = os.path.abspath(pdf_name)
+    converter = PdfToImageConvertor(pdf_path)
+    image_paths = converter.pdf_to_images(path)
+
+    for image_path in image_paths:
+        preprocessor = ImagePreProcessor(image_path)
+        processed_image = preprocessor.preprocess_image()
+        layout = Layout(processed_image)
+        layout_image = layout.layout_detection()
+        layout_image.save(os.path.join(path, f"layout_{os.path.basename(image_path)}"))
     
-    # Step 1: Convert PDF to images
-    image_paths = impl.process_pdf()
 
-    # Step 2: Preprocess images
-    preprocessed_images = impl.preprocess_images(image_paths)
-
-    # Step 3: Detect layout
-    layout_images_paths = impl.layout_detection(preprocessed_images)
-
-    # Step 4: Save results
-    impl.saver(layout_images_paths)
-    
 if __name__ == '__main__':
     launch_program()

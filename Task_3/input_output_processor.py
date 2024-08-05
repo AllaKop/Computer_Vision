@@ -1,38 +1,36 @@
 import os
-from pdf2image import convert_from_path
+import PyPDF2
+import numpy as np
 from PIL import Image
+from pdf2image import convert_from_path
+from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
+from layout_detector import Layout_detector
 
 class PdfToImageConvertor:
     """
-    Reads .pdf files and converts them to images (PNG).
+    Converts a pdf file to an png image.
 
     Attributes:
-        input_file: A .pdf files that will be converted.
+        input_file: a pdf file. 
     """
     def __init__(self, input_file):
         """
-        Initializes the input PDF file. Handles if the file does not exist.
+        Initializes import of a pdf file.
 
         Args:
-            input_file: A .pdf files that will be converted.
-
-        Raises:
-        FileNotFoundError: If the file does not exist.
+        input_file: a pdf file. 
         """
-        if not os.path.isfile(input_file):
-            raise FileNotFoundError(f"The file {input_file} does not exist.")
         self.input_file = input_file
 
     def pdf_to_images(self, output_folder):
         """
-        Converts the PDF file to PNG images and saves them to the output folder.
-        Creates an output_folder if needed.
+        Converts a pdf file to an image PNG.
 
-        Args:
-            output_folder: The folder where the converted PNG images will be saved to.
+        Args: 
+            output_folder: a folder to save an image.
 
         Returns:
-            image_paths: A list of paths to the saved images.
+            image_paths: a list of an image path.
         """
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -40,46 +38,77 @@ class PdfToImageConvertor:
         images = convert_from_path(self.input_file)
         image_paths = []
         for i, image in enumerate(images):
-            image_path = os.path.join(output_folder, f'page_{i + 1}.png')
+            image_path = f'{output_folder}/page_{i + 1}.png'
             image.save(image_path)
             image_paths.append(image_path)
         return image_paths
 
-class ResultSaver:
+class ImagePreProcessor:
     """
-    Saves processed images.
+    Implements preprocessor.py.
 
-    Attributes: 
-        output_folder: a folder to save images.
+    Attributes:
+        image_paths: a list of an image path. 
     """
-    def __init__(self, image_with_boxes_pil):
+    # initializing import an image
+    def __init__(self, image_path):
         """
-        Initializes an final output folder.
+        Initializes an image_path.
 
-        Args: 
-            final_images: final images
+        Args:
+        image_paths: a list of an image path.  
         """
-        self.final_images = image_with_boxes_pil
+        self.image_path = image_path
 
-    def save_images(self,  final_output):
+    def preprocess_image(self) :
         """
-        Saves the processed (for now after layout) images to the output folder overwriting existing.
-
-        Args: 
-            final_output: A folder to same final images.
+        Preprocess and saves an image.
 
         Returns:
-            final_image_paths: A list of images paths.
+            final_image_array: an image (NumPy array format) after preprocessing.
+        """ 
+        image = Image.open(self.image_path)
+
+        # Converting image to numpy array for processing
+        image_np = np.array(image)
+
+        # Correcting Skew
+        skew_corrector = ImageSkewCorrector(image_np)
+        corrected_image = skew_corrector.correct_skew()
+
+        # Converting to Gray and Binarize
+        binarizer = Binarization(corrected_image)
+        gray_image = binarizer.gray_conversion()
+        binarized_image = binarizer.binarized_conversion(gray_image)
+
+        # Removing Noise
+        noise_removal = NoiseRemoval(binarized_image)
+        final_image_array = noise_removal.gaussian_blurring()
+        return final_image_array
+
+class Layout:
+    """
+    Implements layout_detector.py
+
+    Attributes:
+        image_array: an image (NumPy array format) after preprocessing. 
+    """
+    def __init__(self, image_array):
         """
+        Initializes an image.
 
-        if not os.path.exists(self.final_output):
-            os.makedirs(self.final_output)
-        
-        final_image_paths = []
-        final_images = convert_from_path(self.final_images)
-        for i, final_image in enumerate(final_images):
-            final_image_path = os.path.join(self.final_output, f'page_{i + 1}_layout.png')
-            final_image.save(final_image_path)
-            final_image_paths.append(final_image_path)
+        Args:
+            image_array: an image (NumPy array format) after preprocessing. 
+        """
+        self.image_array = image_array
+    
+    def layout_detection(self):
+        """
+        Detects layout in preprocessed images.
 
-        return final_image_paths
+        Returns: 
+            image_with_layout_array: an image with layout (NumPy array format)
+        """
+        layout_detector = Layout_detector(self.image_array)
+        image_with_layout_array = layout_detector.detect_image_layout()
+        return image_with_layout_array
