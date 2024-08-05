@@ -21,8 +21,8 @@ class Layout_detector:
         self.import_image = np.array(noise_removed_image)[..., ::-1] 
         self.model = lp.Detectron2LayoutModel(
             'lp://PubLayNet/mask_rcnn_X_101_32x8d_FPN_3x/config',
-            extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
-            label_map={0: 'Text', 1: 'Title', 2: 'List', 3: 'Table', 4: 'Figure'}
+            extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.9],
+            label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"}
         )
 
     def detect_image_layout(self):
