@@ -104,11 +104,13 @@ class Layout:
     
     def layout_detection(self):
         """
-        Detects layout in preprocessed images.
+        Detects layout in a preprocessed image.
 
         Returns: 
             image_with_layout_array: an image with layout (NumPy array format)
         """
         layout_detector = Layout_detector(self.image_array)
         image_with_layout_array = layout_detector.detect_image_layout()
-        return image_with_layout_array
+        image_with_processed_layout_array = layout_detector.process_image_layout()
+        return image_with_processed_layout_array
+    
