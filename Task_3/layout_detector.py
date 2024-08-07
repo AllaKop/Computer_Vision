@@ -3,7 +3,7 @@ import numpy as np
 import preprocessor
 from PIL import Image
 
-class Layout_detector:
+class LayoutDetector:
     """
     Uses preprocessed documents and creates layout of the document.
 
@@ -25,21 +25,7 @@ class Layout_detector:
             label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"}
         )
 
-    def detect_image_layout(self):
-        """
-        Detects the layout of the image.
-
-        Returns: 
-            layout: a defined layout.
-        """
-        layout = self.model.detect(self.import_image)
-
-        # Draw boxes on the image
-        image_with_boxes_pil = lp.draw_box(self.import_image, layout, box_width=3)
-
-        return layout
-
-    def process_image_layout(self, layout):
+    def process_image_layout(self):
         """
         Process an image with detected layout.
         Extract text.
@@ -50,6 +36,7 @@ class Layout_detector:
         Returns:
 
         """
+        layout = self.model.detect(self.import_image)
 
         # Identify and categorize of different layout elements.
         text_blocks = lp.Layout([b for b in layout if b.type=='Text'])
@@ -103,13 +90,29 @@ class Layout_detector:
         table_blocks = lp.Layout([b.set(id = idx) for idx, b in enumerate(left_blocks_table + right_blocks_table)])
         figure_blocks = lp.Layout([b.set(id = idx) for idx, b in enumerate(left_blocks_figure + right_blocks_figure)])
         
+        # OCR process for all blocks.
         ocr_agent = lp.TesseractAgent(languages='eng')
-        for block in text_blocks:
-            segment_image = (block
-                                .pad(left=5, right=5, top=5, bottom=5)
-                                .crop_image(self.image))
-            text = ocr_agent.detect(segment_image)
-            block.set(text=text, inplace=True)
         
-        for txt in text_blocks.get_texts():
-            print(txt, end='\n---\n')
+        blocks_dict = {
+            'text_blocks': text_blocks,
+            'title_blocks': title_blocks,
+            'list_blocks': list_blocks,
+            'table_blocks': table_blocks,
+            'figure_blocks': figure_blocks
+        }
+        
+        for block_type, blocks in blocks_dict.items():
+            for block in blocks:
+                segment_image = (block
+                                    .pad(left=5, right=5, top=5, bottom=5)
+                                    .crop_image(self.import_image))
+                text = ocr_agent.detect(segment_image)
+                block.set(text=text, inplace=True)
+        
+        # Print detected texts for each block type.
+        for block_type, blocks in blocks_dict.items():
+            print(f"{block_type}:")
+            for txt in blocks.get_texts():
+                print(txt, end='\n---\n')
+        
+        return blocks_dict

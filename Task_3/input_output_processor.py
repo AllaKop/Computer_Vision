@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from pdf2image import convert_from_path
 from preprocessor import ImageSkewCorrector, Binarization, NoiseRemoval
-from layout_detector import Layout_detector
+from layout_detector import LayoutDetector
 
 class PdfToImageConvertor:
     """
@@ -109,8 +109,7 @@ class Layout:
         Returns: 
             image_with_layout_array: an image with layout (NumPy array format)
         """
-        layout_detector = Layout_detector(self.image_array)
-        image_with_layout_array = layout_detector.detect_image_layout()
-        image_with_processed_layout_array = layout_detector.process_image_layout()
-        return image_with_processed_layout_array
+        layout_detector = LayoutDetector(self.image_array)
+        extracted_text = layout_detector.process_image_layout()
+        return extracted_text
     
