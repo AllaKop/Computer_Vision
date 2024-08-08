@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/Cellar/tesseract/5.4.1/bin/tesseract'
+
 import preprocessor
 
 
@@ -28,7 +29,7 @@ class LayoutDetector:
             label_map={0: "Text", 1: "Title", 2: "List", 3:"Table", 4:"Figure"}
         )
 
-    def process_image_layout(self):
+    def process_image_layout(self) -> dict:
         """
         Process an image with detected layout.
         Extract text.
@@ -43,78 +44,25 @@ class LayoutDetector:
         layout = self.model.detect(self.import_image)
 
         # Identify and categorize of different layout elements.
-        text_blocks = lp.Layout([b for b in layout if b.type=='Text'])
-        title_blocks = lp.Layout([b for b in layout if b.type=='Title'])
-        list_blocks = lp.Layout([b for b in layout if b.type=='List'])
-        table_blocks = lp.Layout([b for b in layout if b.type=='Table'])
-        figure_blocks = lp.Layout([b for b in layout if b.type=='Figure'])
+        blocks_dict = {block_type: lp.Layout([b for b in layout if b.type == block_type])
+                       for block_type in ["Text", "Title", "List", "Table", "Figure"]}
 
-        # Get image dimentions.
         h, w = self.import_image.shape[:2]
-
-        # Define left interval.
         left_interval = lp.Interval(0, w/2*1.05, axis='x').put_on_canvas(self.import_image)
 
-        # Filter and sort left layout elements.
-        left_blocks_text = text_blocks.filter_by(left_interval, center=True)
-        left_blocks_text.sort(key = lambda b:b.coordinates[1], inplace=True) # text elements
+        for block_type, blocks in blocks_dict.items():
+            left_blocks = blocks.filter_by(left_interval, center=True)
+            left_blocks.sort(key=lambda b: b.coordinates[1], inplace=True)
+            right_blocks = lp.Layout([b for b in blocks if b not in left_blocks])
+            right_blocks.sort(key=lambda b: b.coordinates[1], inplace=True)
+            blocks_dict[block_type] = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks + right_blocks)])
 
-        left_blocks_title = title_blocks.filter_by(left_interval, center=True)
-        left_blocks_title.sort(key = lambda b:b.coordinates[1], inplace=True) # title elements
-
-        left_blocks_list = list_blocks.filter_by(left_interval, center=True)
-        left_blocks_list.sort(key = lambda b:b.coordinates[1], inplace=True) # list elements
-
-        left_blocks_table = table_blocks.filter_by(left_interval, center=True)
-        left_blocks_table.sort(key = lambda b:b.coordinates[1], inplace=True) # table elements
-
-        left_blocks_figure = figure_blocks.filter_by(left_interval, center=True)
-        left_blocks_figure.sort(key = lambda b:b.coordinates[1], inplace=True) # figure elements
-
-        # Filter and sort right layout elements.
-        right_blocks_text = lp.Layout([b for b in text_blocks if b not in left_blocks_text])
-        right_blocks_text.sort(key = lambda b:b.coordinates[1], inplace=True) # text elements
-
-        right_blocks_title = lp.Layout([b for b in title_blocks if b not in left_blocks_title])
-        right_blocks_title.sort(key = lambda b:b.coordinates[1], inplace=True) # title elements
-
-        right_blocks_list = lp.Layout([b for b in list_blocks if b not in left_blocks_list])
-        right_blocks_list.sort(key = lambda b:b.coordinates[1], inplace=True) # list elements
-
-        right_blocks_table = lp.Layout([b for b in table_blocks if b not in left_blocks_table])
-        right_blocks_table.sort(key = lambda b:b.coordinates[1], inplace=True) # table elements
-
-        right_blocks_figure = lp.Layout([b for b in figure_blocks if b not in left_blocks_figure])
-        right_blocks_figure.sort(key = lambda b:b.coordinates[1], inplace=True) # figure elements
-
-        # Combine and index blocks
-        text_blocks = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks_text + right_blocks_text)])
-        title_blocks = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks_title + right_blocks_title)])
-        list_blocks = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks_list + right_blocks_list)])
-        table_blocks = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks_table + right_blocks_table)])
-        figure_blocks = lp.Layout([b.set(id=idx) for idx, b in enumerate(left_blocks_figure + right_blocks_figure)])
-        
-        # OCR process for all blocks.
         ocr_agent = lp.TesseractAgent(languages='eng')
-        
-        blocks_dict = {
-            'text_blocks': text_blocks,
-            'title_blocks': title_blocks,
-            'list_blocks': list_blocks,
-            'table_blocks': table_blocks,
-            'figure_blocks': figure_blocks
-        }
-        
         for block_type, blocks in blocks_dict.items():
             for block in blocks:
-                segment_image = (block
-                                    .pad(left=5, right=5, top=5, bottom=5)
-                                    .crop_image(self.import_image))
+                segment_image = (block.pad(left=5, right=5, top=5, bottom=5)
+                                 .crop_image(self.import_image))
                 text = ocr_agent.detect(segment_image)
                 block.set(text=text, inplace=True)
-        
-        # Print detected texts for each block type.
-        for block_type, blocks in blocks_dict.items():
-            print(f"{block_type}:")
-            for txt in blocks.get_texts():
-                print(txt, end='\n---\n')
+
+        return blocks_dict

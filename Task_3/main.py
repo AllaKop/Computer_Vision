@@ -1,6 +1,8 @@
 import click
 import os
-from input_output_processor import PdfToImageConvertor, ImagePreProcessor, Layout
+from docx import Document
+
+from input_output_processor import PdfToImageConvertor, ImagePreProcessor, Layout, Doc
 
 """
 A CLI for running the program.
@@ -15,8 +17,8 @@ def launch_program(pdf_name, path):
     Runs the code.
 
     Args:
-        pdf_name: a name of pdf file
-        path: a path to a pdf file
+        pdf_name (str): a name of pdf file
+        path (str): a path to a pdf file
     """
     pdf_path = os.path.abspath(pdf_name)
     converter = PdfToImageConvertor(pdf_path)
@@ -26,7 +28,9 @@ def launch_program(pdf_name, path):
         preprocessor = ImagePreProcessor(image_path)
         processed_image = preprocessor.preprocess_image()
         layout = Layout(processed_image)
-        extracted_text = layout.layout_detection()    
+        extracted_text = layout.layout_detection()
+        document = Doc(extracted_text)
+        document.creating_doc()
 
 if __name__ == '__main__':
     launch_program()
