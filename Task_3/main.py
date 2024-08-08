@@ -26,9 +26,7 @@ def launch_program(pdf_name, path):
         preprocessor = ImagePreProcessor(image_path)
         processed_image = preprocessor.preprocess_image()
         layout = Layout(processed_image)
-        layout_image = layout.layout_detection()
-        layout_image.save(os.path.join(path, f"layout_{os.path.basename(image_path)}"))
-    
+        extracted_text = layout.layout_detection()    
 
 if __name__ == '__main__':
     launch_program()
